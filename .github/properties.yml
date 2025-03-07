@@ -1,0 +1,28 @@
+# Repository Custom Properties
+properties:
+  # Compliance Frameworks
+  compliance:
+    - GDPR
+    - CCPA
+    - SOC2
+    - ISO27001
+
+  # Data Sensitivity
+  data_sensitivity: confidential
+
+  # Project Details
+  project:
+    name: coderAI
+    type: AI Development
+    status: active
+    team: Engineering
+    tech_stack:
+      - Python
+      - JavaScript
+      - React
+
+  # Additional Metadata
+  metadata:
+    maintainer: Jay
+    last_review_date: 2025-03-07
+    next_review_date: 2025-03-08
