@@ -7,16 +7,19 @@ from config import AppConfig
 from components.sidebar import render_sidebar
 from components.main_panel import render_main_panel
 from components.provider_config import render_provider_config
+from components.code_review import render_code_review
+from components.github_integration import render_github_integration
 from services.model_service import ModelService
 from services.embedding_service import EmbeddingService
 from services.vector_store_service import VectorStoreService
+from components.project_management import ProjectManagement
 
 # Load environment variables
 load_dotenv()
 
 # Set page configuration
 st.set_page_config(
-    page_title="CoderAI - AI Integration Platform",
+    page_title="CoderAI",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -53,7 +56,7 @@ def initialize_session_state():
             "huggingface": {"active": True, "token": os.getenv("HF_TOKEN", "")}
         }
 
-def main():
+async def main():
     """Main application entry point"""
     # Initialize session state
     initialize_session_state()
@@ -103,6 +106,14 @@ def main():
         render_main_panel()
     elif st.session_state.current_page == "Provider Configuration":
         render_provider_config()
-    
+    elif st.session_state.current_page == "Code Review":
+        render_code_review()
+    elif st.session_state.current_page == "GitHub Integration":
+        render_github_integration()
+
+# Initialize project management
+project_mgmt = ProjectManagement()
+
 if __name__ == "__main__":
-    main()
+    import asyncio
+    asyncio.run(main())

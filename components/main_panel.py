@@ -3,9 +3,39 @@ import pandas as pd
 import plotly.express as px
 from datetime import datetime
 import os
+from components.helpmate_bridge import init_helpmate_bridge
 
 def render_main_panel():
-    """Render the main panel of the application"""
+    """Render the main panel of the CoderAI application"""
+    
+    # Initialize Helpmate-AI bridge if not already initialized
+    if "helpmate_initialized" not in st.session_state:
+        st.session_state.helpmate_initialized = False
+        
+    if not st.session_state.helpmate_initialized:
+        try:
+            st.session_state.helpmate_thread = init_helpmate_bridge()
+            st.session_state.helpmate_initialized = True
+        except Exception as e:
+            st.error(f"Failed to initialize Helpmate-AI integration: {str(e)}")
+    
+    # Main panel tabs
+    tab1, tab2, tab3, tab4 = st.tabs(["Dashboard", "Chat", "Analytics", "Settings"])
+    
+    with tab1:
+        render_dashboard()
+    
+    with tab2:
+        render_chat_interface()
+    
+    with tab3:
+        render_analytics()
+    
+    with tab4:
+        render_settings()
+
+def render_dashboard():
+    """Render the dashboard section"""
     # Create a header with logo and title
     col1, col2 = st.columns([1, 3])
     with col1:
@@ -18,23 +48,49 @@ def render_main_panel():
     # Dashboard metrics
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric(label="Active Providers", value=sum(1 for p in st.session_state.providers.values() if p["active"]))
+        st.metric(label="Active Providers", value=sum(1 for p in st.session_state.providers.values() if p.get("active", False)))
     with col2:
         st.metric(label="Documents Processed", value=len(st.session_state.get("documents", [])))
     with col3:
         st.metric(label="AI Queries", value=len(st.session_state.get("chat_history", [])))
     
-    # Main tabs
-    tab1, tab2, tab3 = st.tabs(["Document Processing", "Chat Interface", "Analytics"])
+    # Initialize chatbot state if not already initialized
+    if "chatbot_open" not in st.session_state:
+        st.session_state.chatbot_open = False
     
-    with tab1:
-        render_document_processing()
+    # Create a button that will toggle the chatbot state
+    chatbot_col1, chatbot_col2 = st.columns([6, 1])
+    with chatbot_col2:
+        if st.button("Chat 💬", key="dashboard_chat_button"):
+            st.session_state.chatbot_open = not st.session_state.chatbot_open
     
-    with tab2:
-        render_chat_interface()
+    # Display the chatbot if it's open
+    if st.session_state.chatbot_open:
+        st.markdown("""
+        <div style="position: fixed; bottom: 80px; right: 20px; width: 350px; height: 500px; 
+                    background-color: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+                    z-index: 9999; overflow: hidden;">
+            <div style="width: 100%; height: 30px; background-color: #4B8BF5; display: flex; justify-content: space-between; align-items: center; padding: 0 10px;">
+                <span style="color: white; font-weight: bold;">Helpmate AI</span>
+                <button style="background: none; border: none; color: white; cursor: pointer; font-size: 16px;" 
+                        onclick="window.location.href = window.location.href;">✕</button>
+            </div>
+            <iframe src="http://localhost:5173" width="100%" height="470px" frameborder="0"></iframe>
+        </div>
+        """, unsafe_allow_html=True)
     
-    with tab3:
-        render_analytics()
+    # Main dashboard content
+    st.subheader("Recent Activity")
+    
+    # Sample data for recent activity
+    activity_data = {
+        "Timestamp": ["2025-03-08 19:45", "2025-03-08 18:30", "2025-03-08 17:15", "2025-03-08 16:00"],
+        "Activity": ["Code Review", "AI Query", "Document Processing", "GitHub Integration"],
+        "Details": ["Reviewed login.py", "Generated API documentation", "Processed requirements.txt", "Synced with repository"]
+    }
+    
+    activity_df = pd.DataFrame(activity_data)
+    st.dataframe(activity_df, use_container_width=True)
 
 def render_document_processing():
     """Render the document processing section"""
@@ -108,85 +164,97 @@ def render_document_processing():
 
 def render_chat_interface():
     """Render the chat interface section"""
-    st.subheader("Chat with AI")
+    st.subheader("Chat Interface")
     
-    # Model selection
-    col1, col2 = st.columns(2)
+    # Initialize chatbot state if not already initialized
+    if "chatbot_open" not in st.session_state:
+        st.session_state.chatbot_open = False
     
-    with col1:
-        # Provider selection
-        active_providers = [p for p, c in st.session_state.providers.items() if c["active"]]
-        if not active_providers:
-            st.warning("No active providers. Please configure a provider in the settings.")
-            return
-            
-        selected_provider = st.selectbox("Select Provider", active_providers)
+    # Add a button to open the chatbot
+    if st.button("Open Helpmate AI Assistant", key="chat_tab_button"):
+        st.session_state.chatbot_open = not st.session_state.chatbot_open
     
-    with col2:
-        # Model selection based on provider
-        if selected_provider == "ollama":
-            models = st.session_state.config.provider_configs["ollama"]["available_models"]
-            default_model = st.session_state.config.default_ollama_model
-        elif selected_provider == "openai":
-            models = st.session_state.config.provider_configs["openai"]["available_models"]
-            default_model = models[0]
-        elif selected_provider == "anthropic":
-            models = st.session_state.config.provider_configs["anthropic"]["available_models"]
-            default_model = models[0]
-        else:
-            models = ["No models available"]
-            default_model = models[0]
-            
-        selected_model = st.selectbox(
-            "Select Model",
-            models,
-            index=models.index(default_model) if default_model in models else 0
-        )
+    # Display the chatbot if it's open
+    if st.session_state.chatbot_open:
+        st.markdown("""
+        <div style="position: fixed; bottom: 80px; right: 20px; width: 350px; height: 500px; 
+                    background-color: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+                    z-index: 9999; overflow: hidden;">
+            <div style="width: 100%; height: 30px; background-color: #4B8BF5; display: flex; justify-content: space-between; align-items: center; padding: 0 10px;">
+                <span style="color: white; font-weight: bold;">Helpmate AI</span>
+                <button style="background: none; border: none; color: white; cursor: pointer; font-size: 16px;" 
+                        onclick="window.location.href = window.location.href;">✕</button>
+            </div>
+            <iframe src="http://localhost:5173" width="100%" height="470px" frameborder="0"></iframe>
+        </div>
+        """, unsafe_allow_html=True)
     
-    # Store current model and provider in session state
-    st.session_state.current_model = selected_model
-    st.session_state.current_provider = selected_provider
+    # Native chat interface
+    st.subheader("Native Chat Interface")
     
-    # Chat history
-    st.subheader("Chat History")
-    
-    for message in st.session_state.get("chat_history", []):
-        with st.chat_message(message["role"]):
-            st.write(message["content"])
-    
-    # Chat input
-    user_input = st.chat_input("Ask something...")
-    
-    if user_input:
-        # Add user message to chat history
-        if "chat_history" not in st.session_state:
-            st.session_state.chat_history = []
-            
-        st.session_state.chat_history.append({
-            "role": "user",
-            "content": user_input
-        })
+    # Message input
+    with st.form("chat_form"):
+        user_input = st.text_area("Your message:", height=100)
         
-        # Display user message
-        with st.chat_message("user"):
-            st.write(user_input)
+        col1, col2 = st.columns([4, 1])
+        with col2:
+            submit_button = st.form_submit_button("Send")
         
-        # Generate AI response
-        with st.chat_message("assistant"):
-            with st.spinner("Thinking..."):
-                # In a real implementation, we would:
-                # 1. Send the query to the selected model via the appropriate provider
-                # 2. Get the response and display it
+        if submit_button and user_input:
+            # Add user message to chat history
+            if "chat_history" not in st.session_state:
+                st.session_state.chat_history = []
+            
+            st.session_state.chat_history.append({"role": "user", "content": user_input})
+            
+            # Generate AI response
+            try:
+                model_service = st.session_state.model_service
                 
-                # Simulate AI response
-                ai_response = f"This is a simulated response from {selected_model} via {selected_provider}. In a real implementation, this would be generated by the AI model."
-                st.write(ai_response)
-        
-        # Add AI response to chat history
-        st.session_state.chat_history.append({
-            "role": "assistant",
-            "content": ai_response
-        })
+                # Find active provider
+                active_provider = None
+                active_model = None
+                
+                if st.session_state.providers.get("ollama", {}).get("active", False):
+                    active_provider = "ollama"
+                    active_model = "llama2"
+                elif st.session_state.providers.get("openai", {}).get("active", False):
+                    active_provider = "openai"
+                    active_model = "gpt-3.5-turbo"
+                elif st.session_state.providers.get("anthropic", {}).get("active", False):
+                    active_provider = "anthropic"
+                    active_model = "claude-3-haiku"
+                
+                if active_provider:
+                    with st.spinner("Generating response..."):
+                        response = model_service.query_model(
+                            prompt=user_input,
+                            provider=active_provider,
+                            model=active_model
+                        )
+                        
+                        ai_response = response.get("text", "Sorry, I couldn't generate a response.")
+                        st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
+                else:
+                    st.error("No active AI providers found. Please configure a provider in the settings.")
+            except Exception as e:
+                st.error(f"Error generating response: {str(e)}")
+    
+    # Display chat history
+    if "chat_history" in st.session_state and st.session_state.chat_history:
+        for message in st.session_state.chat_history:
+            if message["role"] == "user":
+                st.markdown(f"""
+                <div style="background-color: #e6f7ff; padding: 10px; border-radius: 10px; margin-bottom: 10px; text-align: right;">
+                    <strong>You:</strong> {message["content"]}
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                <div style="background-color: #f0f0f0; padding: 10px; border-radius: 10px; margin-bottom: 10px;">
+                    <strong>AI:</strong> {message["content"]}
+                </div>
+                """, unsafe_allow_html=True)
 
 def render_analytics():
     """Render the analytics section"""
@@ -257,3 +325,8 @@ def render_analytics():
         
         for metric, value in metrics_data.items():
             st.metric(label=metric, value=value)
+
+def render_settings():
+    """Render the settings section"""
+    st.subheader("Settings")
+    # Add settings UI here

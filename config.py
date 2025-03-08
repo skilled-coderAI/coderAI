@@ -4,16 +4,16 @@ from typing import Dict, List, Optional, Any
 class AppConfig(BaseModel):
     """Application configuration settings"""
     # Default models
-    default_ollama_model: str = "llama2"
+    default_ollama_model: str = "llama3.2:1b"
     default_embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     
     # UI settings
     theme: str = "light"
-    max_chat_history: int = 100
+    max_chat_history: int = 500
     
     # File handling
     allowed_extensions: List[str] = ["pdf", "txt", "docx", "md"]
-    max_file_size_mb: int = 10
+    max_file_size_mb: int = 100
     
     # Vector database settings
     vector_db_path: str = "./data/vector_db"
@@ -28,7 +28,7 @@ class AppConfig(BaseModel):
         "ollama": {
             "base_url": "http://localhost:11434",
             "available_models": [
-                "llama2", "mistral", "gemma", "phi", "codellama"
+                "llama3.2:1b", "mistral", "gemma", "phi", "codellama"
             ]
         },
         "openai": {
@@ -38,7 +38,7 @@ class AppConfig(BaseModel):
         },
         "anthropic": {
             "available_models": [
-                "claude-3-opus", "claude-3-sonnet", "claude-3-haiku"
+                "claude-3-haiku-20240307 1", "claude-3-opus-20240229", "claude-3-5-sonnet-20240620", "claude-3-5-haiku-20241022", "claude-3-5-sonnet-20241022", "claude-3-7-sonnet-20250219"
             ]
         },
         "huggingface": {
