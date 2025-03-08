@@ -21,6 +21,14 @@ def render_sidebar():
         if st.button("⚙️ Provider Configuration", use_container_width=True):
             st.session_state.current_page = "Provider Configuration"
             st.rerun()
+            
+        if st.button("🔍 Code Review", use_container_width=True):
+            st.session_state.current_page = "Code Review"
+            st.rerun()
+            
+        if st.button("🐙 GitHub Integration", use_container_width=True):
+            st.session_state.current_page = "GitHub Integration"
+            st.rerun()
         
         st.divider()
         
