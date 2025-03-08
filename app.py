@@ -9,9 +9,11 @@ from components.main_panel import render_main_panel
 from components.provider_config import render_provider_config
 from components.code_review import render_code_review
 from components.github_integration import render_github_integration
+from components.agent_panel import render_agent_panel
 from services.model_service import ModelService
 from services.embedding_service import EmbeddingService
 from services.vector_store_service import VectorStoreService
+from services.agent_core import CoderAIAgentCore
 from components.project_management import ProjectManagement
 
 # Load environment variables
@@ -38,6 +40,12 @@ def initialize_session_state():
     
     if 'vector_store' not in st.session_state:
         st.session_state.vector_store = VectorStoreService()
+    
+    if 'agent_core' not in st.session_state:
+        st.session_state.agent_core = CoderAIAgentCore(
+            model_service=st.session_state.model_service,
+            embedding_service=st.session_state.embedding_service
+        )
     
     if 'current_page' not in st.session_state:
         st.session_state.current_page = "Home"
@@ -110,6 +118,8 @@ async def main():
         render_code_review()
     elif st.session_state.current_page == "GitHub Integration":
         render_github_integration()
+    elif st.session_state.current_page == "Agent Framework":
+        render_agent_panel()
 
 # Initialize project management
 project_mgmt = ProjectManagement()

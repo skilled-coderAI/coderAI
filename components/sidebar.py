@@ -29,6 +29,10 @@ def render_sidebar():
         if st.button("🐙 GitHub Integration", use_container_width=True):
             st.session_state.current_page = "GitHub Integration"
             st.rerun()
+            
+        if st.button("🤖 Agent Framework", use_container_width=True):
+            st.session_state.current_page = "Agent Framework"
+            st.rerun()
         
         st.divider()
         
