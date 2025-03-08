@@ -4,6 +4,7 @@ import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import Footer from "./Footer";
 import ShareButtons from "./components/ShareButtons";
+import CodeAnalysis from "./components/CodeAnalysis";
 import { FaMicrophone, FaPaperPlane, FaVolumeUp } from "react-icons/fa";
 
 const cache = new Map();
@@ -15,8 +16,13 @@ function App() {
   const [isListening, setIsListening] = useState(false);
   const [recognition, setRecognition] = useState(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [mode, setMode] = useState("chat"); // "chat" or "code"
+  const [isEmbedded, setIsEmbedded] = useState(false);
 
   useEffect(() => {
+    // Check if running in an iframe
+    setIsEmbedded(window.self !== window.top);
+
     if ("webkitSpeechRecognition" in window) {
       const recognition = new window.webkitSpeechRecognition();
       recognition.continuous = false;
@@ -149,71 +155,95 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-950 text-white">
-      <nav className="p-4 bg-[#040E23]">
-        <h1 className="text-2xl font-bold text-center">Helpmate AI</h1>
-      </nav>
-      <div className="flex-grow p-4">
-        <div className="chat-display space-y-4">
-          {chatHistory.map((chat, index) => (
-            <div
-              key={index}
-              className={`p-3 rounded-lg ${
-                chat.type === "question"
-                  ? "bg-blue-600 text-white self-end text-right w-fit max-w-[90%] ml-auto"
-                  : "bg-gray-800 text-white self-start text-left w-fit max-w-[90%]"
-              }`}
-            >
-              <ReactMarkdown className="markdown-body">{chat.text}</ReactMarkdown>
-              {chat.type === "answer" && (
-                <div className="flex flex-wrap justify-end mt-2 space-x-2">
-                  <button onClick={() => toggleSpeaking(chat.text)} className="flex items-center text-gray-300 mt-2 mr-2">
-                    <FaVolumeUp className="mr-1" />
-                  </button>
-                  <ShareButtons answer={chat.text} />
-                </div>
-              )}
-            </div>
-          ))}
-          {generatingAnswer && (
-            <div className="p-3 rounded-lg bg-gray-900 animate-pulse">
-              <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
-              <div className="h-4 bg-gray-700 rounded w-2/3 mb-2"></div>
-              <div className="h-4 bg-gray-700 rounded w-1/2"></div>
-            </div>
-          )}
-        </div>
-      </div>
-      <form onSubmit={generateAnswer} className="flex items-center w-full bg-gray-900 p-3">
-        <textarea
-          required
-          className="border border-gray-800 bg-gray-800 text-white rounded-lg w-full p-2 h-12 resize-none focus:border-blue-500 outline-none"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          placeholder="Your AI mate is here to help!"
-        />
-        <div className="flex items-center space-x-2 ml-4">
-          {recognition && (
+    <div className={`flex flex-col ${isEmbedded ? 'h-screen' : 'min-h-screen'} bg-gray-950 text-white`}>
+      <nav className="p-2 bg-[#040E23]">
+        <div className="flex justify-between items-center max-w-4xl mx-auto">
+          <h1 className="text-xl font-bold">Helpmate AI</h1>
+          <div className="flex gap-2">
             <button
-              type="button"
-              onClick={toggleListening}
-              className={`p-2 rounded-full transition-transform duration-300 ease-in-out ${
-                isListening ? "bg-red-500" : "bg-blue-500"
-              } hover:opacity-80`}
+              onClick={() => setMode("chat")}
+              className={`px-3 py-1 rounded-lg ${mode === "chat" ? "bg-blue-600" : "bg-gray-700"} text-white transition-colors text-sm`}
             >
-              <FaMicrophone className="text-white" />
+              Chat
             </button>
-          )}
-          <button
-            type="submit"
-            className="p-2 rounded-full bg-blue-600 hover:bg-blue-700"
-            disabled={generatingAnswer}
-          >
-            <FaPaperPlane className={`text-white ${generatingAnswer ? "send-animation" : ""}`} />
-          </button>
+            <button
+              onClick={() => setMode("code")}
+              className={`px-3 py-1 rounded-lg ${mode === "code" ? "bg-blue-600" : "bg-gray-700"} text-white transition-colors text-sm`}
+            >
+              Code Analysis
+            </button>
+          </div>
         </div>
-      </form>
-      <Footer />
+      </nav>
+      <div className="flex-grow p-2">
+        {mode === "chat" ? (
+          <div className="chat-display space-y-2">
+            {chatHistory.map((chat, index) => (
+              <div
+                key={index}
+                className={`p-2 rounded-lg ${
+                  chat.type === "question"
+                    ? "bg-blue-600 text-white self-end text-right w-fit max-w-[90%] ml-auto"
+                    : "bg-gray-800 text-white self-start text-left w-fit max-w-[90%]"
+                }`}
+              >
+                <ReactMarkdown className="markdown-body">{chat.text}</ReactMarkdown>
+                {chat.type === "answer" && (
+                  <div className="flex flex-wrap justify-end mt-1 space-x-1">
+                    <button onClick={() => toggleSpeaking(chat.text)} className="flex items-center text-gray-300 mt-1 mr-1">
+                      <FaVolumeUp className="mr-1" />
+                    </button>
+                    <ShareButtons answer={chat.text} />
+                  </div>
+                )}
+              </div>
+            ))}
+            {generatingAnswer && (
+              <div className="p-2 rounded-lg bg-gray-900 animate-pulse">
+                <div className="h-3 bg-gray-700 rounded w-3/4 mb-1"></div>
+                <div className="h-3 bg-gray-700 rounded w-2/3 mb-1"></div>
+                <div className="h-3 bg-gray-700 rounded w-1/2"></div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <CodeAnalysis />
+        )}
+      </div>
+      {mode === "chat" && (
+        <div>
+          <form onSubmit={generateAnswer} className="flex items-center w-full bg-gray-900 p-2">
+            <textarea
+              required
+              className="border border-gray-800 bg-gray-800 text-white rounded-lg w-full p-1 h-10 resize-none focus:border-blue-500 outline-none"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              placeholder="Your AI mate is here to help!"
+            />
+            <div className="flex items-center space-x-1 ml-2">
+              {recognition && (
+                <button
+                  type="button"
+                  onClick={toggleListening}
+                  className={`p-1 rounded-full transition-transform duration-300 ease-in-out ${
+                    isListening ? "bg-red-500" : "bg-blue-500"
+                  } hover:opacity-80`}
+                >
+                  <FaMicrophone className="text-white" />
+                </button>
+              )}
+              <button
+                type="submit"
+                className="p-1 rounded-full bg-blue-600 hover:bg-blue-700"
+                disabled={generatingAnswer}
+              >
+                <FaPaperPlane className={`text-white ${generatingAnswer ? "send-animation" : ""}`} />
+              </button>
+            </div>
+          </form>
+          <Footer />
+        </div>
+      )}
     </div>
   );
 }

@@ -209,3 +209,46 @@ class ModelService:
             )
         else:
             raise ValueError(f"Unsupported provider: {provider}")
+
+    def generate_response(self, question: str) -> str:
+        """
+        Generate a response to a question from Helpmate-AI
+        
+        Args:
+            question: The question from Helpmate-AI
+            
+        Returns:
+            A response string
+        """
+        try:
+            # Find the first active provider
+            active_provider = None
+            active_model = None
+            
+            if self.providers.get("ollama", {}).get("active", False):
+                active_provider = "ollama"
+                active_model = "llama2"  # Default model for Ollama
+            elif self.providers.get("openai", {}).get("active", False):
+                active_provider = "openai"
+                active_model = "gpt-3.5-turbo"  # Default model for OpenAI
+            elif self.providers.get("anthropic", {}).get("active", False):
+                active_provider = "anthropic"
+                active_model = "claude-3-haiku"  # Default model for Anthropic
+            
+            if not active_provider:
+                return "No active AI providers found. Please configure a provider in the CoderAI settings."
+            
+            # Generate response using the active provider
+            system_prompt = "You are a helpful AI assistant integrated with CoderAI. Answer the user's question concisely and accurately."
+            
+            response = self.query_model(
+                prompt=question,
+                provider=active_provider,
+                model=active_model,
+                system_prompt=system_prompt
+            )
+            
+            return response.get("text", "Sorry, I couldn't generate a response.")
+            
+        except Exception as e:
+            return f"Error generating response: {str(e)}"
