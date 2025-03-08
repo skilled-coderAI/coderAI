@@ -20,7 +20,7 @@ def render_main_panel():
             st.error(f"Failed to initialize Helpmate-AI integration: {str(e)}")
     
     # Main panel tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["Dashboard", "Chat", "Analytics", "Settings"])
+    tab1, tab2, tab3 = st.tabs(["Dashboard", "Chat", "Analytics"])
     
     with tab1:
         render_dashboard()
@@ -31,8 +31,8 @@ def render_main_panel():
     with tab3:
         render_analytics()
     
-    with tab4:
-        render_settings()
+    """ with tab4:
+        render_settings() """
 
 def render_dashboard():
     """Render the dashboard section"""
@@ -43,7 +43,7 @@ def render_dashboard():
         st.image(logo_path, width=100)
     with col2:
         st.markdown("<h1 class='main-header'>CoderAI</h1>", unsafe_allow_html=True)
-        st.markdown("<p class='subheader'>Your AI Integration Platform</p>", unsafe_allow_html=True)
+        st.markdown("<p class='subheader'>Your AI Platform</p>", unsafe_allow_html=True)
     
     # Dashboard metrics
     col1, col2, col3 = st.columns(3)

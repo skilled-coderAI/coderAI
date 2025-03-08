@@ -66,74 +66,74 @@ class CoderAIAgentCore:
     def _register_coderAI_tools(self):
         """Register CoderAI-specific tools with the registry"""
         # Register code analysis tools
-        self.registry.register_tool(
+        self.registry.register(
+            type="tool",
             name="code_analysis",
-            description="Analyze code structure and quality",
-            function=self._code_analysis_tool
-        )
+            func_name="code_analysis"
+        )(self._code_analysis_tool)
         
         # Register documentation tools
-        self.registry.register_tool(
+        self.registry.register(
+            type="tool",
             name="generate_documentation",
-            description="Generate documentation for code",
-            function=self._documentation_tool
-        )
+            func_name="generate_documentation"
+        )(self._documentation_tool)
         
         # Register visualization tools
-        self.registry.register_tool(
+        self.registry.register(
+            type="tool",
             name="visualize_code",
-            description="Create visual representations of code structure",
-            function=self._visualization_tool
-        )
+            func_name="visualize_code"
+        )(self._visualization_tool)
         
         # Register code generation tools
-        self.registry.register_tool(
+        self.registry.register(
+            type="tool",
             name="generate_code",
-            description="Generate code based on requirements",
-            function=self._code_generation_tool
-        )
+            func_name="generate_code"
+        )(self._code_generation_tool)
         
         # Register code refactoring tools
-        self.registry.register_tool(
+        self.registry.register(
+            type="tool",
             name="refactor_code",
-            description="Refactor code to improve quality",
-            function=self._code_refactoring_tool
-        )
+            func_name="refactor_code"
+        )(self._code_refactoring_tool)
         
         # Register testing tools
-        self.registry.register_tool(
+        self.registry.register(
+            type="tool",
             name="generate_tests",
-            description="Generate test cases for code",
-            function=self._test_generation_tool
-        )
+            func_name="generate_tests"
+        )(self._test_generation_tool)
         
         # Register file operations tools
-        self.registry.register_tool(
+        self.registry.register(
+            type="tool",
             name="file_operations",
-            description="Perform file operations like read, write, and search",
-            function=self._file_operations_tool
-        )
+            func_name="file_operations"
+        )(self._file_operations_tool)
         
         # Register web tools
-        self.registry.register_tool(
+        self.registry.register(
+            type="tool",
             name="web_search",
-            description="Search the web for information",
-            function=self._web_search_tool
-        )
+            func_name="web_search"
+        )(self._web_search_tool)
         
         # Register terminal tools
-        self.registry.register_tool(
+        self.registry.register(
+            type="tool",
             name="terminal_command",
-            description="Execute terminal commands",
-            function=self._terminal_command_tool
-        )
+            func_name="terminal_command"
+        )(self._terminal_command_tool)
         
         # Register RAG tools
-        self.registry.register_tool(
+        self.registry.register(
+            type="tool",
             name="rag_search",
-            description="Search through knowledge base using RAG",
-            function=self._rag_search_tool
-        )
+            func_name="rag_search"
+        )(self._rag_search_tool)
         
         self.logger.info("CoderAI tools registered with the registry")
     
@@ -538,18 +538,30 @@ class CoderAIAgentCore:
         Returns:
             List of available tools
         """
-        tools = self.registry.list_items(type="tool")
+        # Get list of tool names
+        tool_names = self.registry.list_tools()
         
         # Format tools for UI
         formatted_tools = []
-        for name, tool_info in tools.items():
+        for name in tool_names:
+            # Get tool function
+            tool_func = self.registry.get_tool(name)
+            
+            # Get tool info from docstring if available
+            description = ""
+            category = "other"
+            parameters = {}
+            
+            if tool_func and tool_func.__doc__:
+                description = tool_func.__doc__.strip().split("\n")[0]
+            
             formatted_tools.append({
                 "name": name,
-                "description": tool_info.get("description", ""),
-                "category": tool_info.get("category", "other"),
-                "parameters": tool_info.get("parameters", {})
+                "description": description,
+                "category": category,
+                "parameters": parameters
             })
-        
+            
         return formatted_tools
     
     def execute_tool(self, tool_name: str, parameters: Dict[str, Any]) -> Dict[str, Any]:

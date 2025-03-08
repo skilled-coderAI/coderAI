@@ -1,6 +1,41 @@
 import streamlit as st
 import os
+import sys
 from dotenv import load_dotenv
+
+# Workaround for PyTorch-Streamlit interaction issues
+import sys
+original_import = __import__
+
+def patched_import(name, globals=None, locals=None, fromlist=(), level=0):
+    # Skip watching PyTorch modules to avoid file watcher errors
+    if name.startswith('torch'):
+        if fromlist and '__path__' in fromlist:
+            fromlist = tuple(item for item in fromlist if item != '__path__')
+    
+    return original_import(name, globals, locals, fromlist, level)
+
+sys.__import__ = patched_import
+
+# Set environment variable to handle PyTorch-Streamlit interaction issues
+os.environ["STREAMLIT_WATCH_EXCLUDE_MODULES"] = "torch,torchvision,torchaudio"
+
+# Filter out PyTorch-related error messages
+class ErrorFilter:
+    def __init__(self, original_stderr):
+        self.original_stderr = original_stderr
+
+    def write(self, message):
+        # Filter out PyTorch errors related to __path__._path
+        if "RuntimeError: Tried to instantiate class '__path__._path'" not in message and \
+           "Examining the path of torch.classes raised" not in message:
+            self.original_stderr.write(message)
+
+    def flush(self):
+        self.original_stderr.flush()
+
+# Apply the filter to stderr
+sys.stderr = ErrorFilter(sys.stderr)
 
 # Import custom modules
 from config import AppConfig
@@ -64,7 +99,7 @@ def initialize_session_state():
             "huggingface": {"active": True, "token": os.getenv("HF_TOKEN", "")}
         }
 
-async def main():
+def main():
     """Main application entry point"""
     # Initialize session state
     initialize_session_state()
@@ -125,5 +160,4 @@ async def main():
 project_mgmt = ProjectManagement()
 
 if __name__ == "__main__":
-    import asyncio
-    asyncio.run(main())
+    main()

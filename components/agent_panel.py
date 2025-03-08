@@ -9,16 +9,15 @@ from typing import Dict, List, Any, Optional
 
 def render_agent_panel():
     """Render the Agent Framework panel in the CoderAI interface"""
-    st.title("🤖 Agent Framework")
-    st.markdown("### Powerful & Zero-Code LLM Agent Framework")
-    
+    st.title("CoderAI Agent Framework")
+
     # Access the Agent Framework core from session state
     agent_core = st.session_state.agent_core
     
     # Create tabs for different Agent Framework capabilities
-    tabs = st.tabs(["Agent Playground", "Workflow Builder", "Tools Explorer"])
+    tabs = st.tabs(["Playground", "Workflow Builder", "Tools Explorer"])
     
-    with tabs[0]:  # Agent Playground
+    with tabs[0]:  # Playground
         render_agent_playground(agent_core)
     
     with tabs[1]:  # Workflow Builder
@@ -29,7 +28,7 @@ def render_agent_panel():
 
 def render_agent_playground(agent_core):
     """Render the Agent Playground interface"""
-    st.header("Agent Playground")
+    st.header("Playground")
     st.markdown("Create and interact with AI agents using natural language.")
     
     # Agent type selection
@@ -131,7 +130,7 @@ def render_agent_playground(agent_core):
             if st.button(example, key=f"example_{example[:20]}"):
                 # This will set the task description when an example is clicked
                 st.session_state.task_description = example
-                st.experimental_rerun()
+                st.rerun()
 
 def render_workflow_builder(agent_core):
     """Render the Workflow Builder interface"""
@@ -159,7 +158,7 @@ def render_workflow_builder(agent_core):
         with col3:
             if st.button("Delete", key=f"delete_step_{i}"):
                 st.session_state.workflow_steps.pop(i)
-                st.experimental_rerun()
+                st.rerun()
     
     # Add new step
     with st.expander("Add Workflow Step", expanded=len(st.session_state.workflow_steps) == 0):
@@ -250,7 +249,7 @@ def render_workflow_builder(agent_core):
             # Add to workflow steps
             st.session_state.workflow_steps.append(new_step)
             st.success(f"Step added: {step_description}")
-            st.experimental_rerun()
+            st.rerun()
     
     # Save workflow
     if st.button("Save Workflow", type="primary", disabled=len(st.session_state.workflow_steps) == 0):
@@ -273,7 +272,7 @@ def render_workflow_builder(agent_core):
                     st.success(f"Workflow '{workflow_name}' saved successfully!")
                     # Clear workflow steps
                     st.session_state.workflow_steps = []
-                    st.experimental_rerun()
+                    st.rerun()
                 else:
                     st.error(f"Error saving workflow: {result['error']}")
                     

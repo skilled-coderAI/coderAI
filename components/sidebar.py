@@ -7,8 +7,8 @@ def render_sidebar():
         # Use the local Logo.png file instead of placeholder
         logo_path = os.path.join(os.getcwd(), "Logo.png")
         st.image(logo_path, width=150)
-        st.title("CoderAI")
-        st.subheader("AI Integration Platform")
+        st.title("")
+        st.subheader("AI Platform")
         
         st.divider()
         

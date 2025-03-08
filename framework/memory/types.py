@@ -7,6 +7,32 @@ from dataclasses import dataclass, field
 from typing import Dict, Any, List, Optional, Union
 from datetime import datetime
 import uuid
+from enum import Enum, auto
+
+class MemoryType(Enum):
+    """
+    Types of memories that can be stored.
+    """
+    CONVERSATION = "conversation"
+    CODE_SNIPPET = "code_snippet"
+    REQUIREMENT = "requirement"
+    PREFERENCE = "preference"
+    FEEDBACK = "feedback"
+    ERROR = "error"
+    SOLUTION = "solution"
+    GENERAL = "general"
+
+@dataclass
+class MemoryQuery:
+    """
+    Query parameters for searching memories.
+    """
+    memory_type: Optional[MemoryType] = None
+    content_contains: Optional[str] = None
+    created_after: Optional[datetime] = None
+    created_before: Optional[datetime] = None
+    metadata: Optional[Dict[str, Any]] = None
+    limit: Optional[int] = None
 
 @dataclass
 class Memory:
@@ -15,18 +41,21 @@ class Memory:
     """
     id: str
     content: str
+    type: MemoryType = MemoryType.GENERAL
     metadata: Dict[str, Any] = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: datetime = field(default_factory=datetime.now)
+    last_accessed: Optional[datetime] = None
     embedding: Optional[List[float]] = None
     
     @classmethod
-    def create(cls, content: str, metadata: Dict[str, Any] = None):
+    def create(cls, content: str, memory_type: MemoryType = MemoryType.GENERAL, metadata: Dict[str, Any] = None):
         """
         Create a new memory.
         
         Args:
             content: Content of the memory
+            memory_type: Type of the memory
             metadata: Metadata for the memory
             
         Returns:
@@ -35,6 +64,7 @@ class Memory:
         return cls(
             id=str(uuid.uuid4()),
             content=content,
+            type=memory_type,
             metadata=metadata or {},
         )
 
