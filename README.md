@@ -1,8 +1,8 @@
-# CoderAI - AI Integration Platform
+# CoderAI - AI PaaS solution
 
-![GitHub repo size](https://img.shields.io/github/repo-size/codeaashu/CoderAI)
-![GitHub stars](https://img.shields.io/github/stars/codeaashu/CoderAI?style=social)
-![GitHub forks](https://img.shields.io/github/forks/codeaashu/CoderAI?style=social)
+![GitHub repo size](https://img.shields.io/github/repo-size/skilled-coderAI/coderAI)
+![GitHub stars](https://img.shields.io/github/stars/skilled-coderAI/coderAI?style=social)
+![GitHub forks](https://img.shields.io/github/forks/skilled-coderAI/coderAI?style=social)
 
 CoderAI is a powerful SaaS platform that enables seamless integration with various AI solution providers and development tools. This application allows users to:
 
